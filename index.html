@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔精bot - 重返未来1999查询</title>
+    <link rel="icon" type="image/png" href="mojingbg.png">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #e0c080;
+            --accent-color: #f05454;
+            --dark-color: #121212;
+            --light-color: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            color: var(--light-color);
+            background-color: var(--dark-color);
+            overflow-x: hidden;
+        }
+
+        /* 背景和雨滴效果 */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .background-img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+        }
+
+        .rain-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background-color: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid var(--glass-border);
+            transition: 0.3s ease;
+        }
+
+        nav.scrolled {
+            padding: 1rem 5%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo img {
+            width: 40px;
+            height: auto;
+        }
+
+        .logo-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* 英雄区块 */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 5%;
+            position: relative;
+        }
+
+        .hero-content {
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-img {
+            width: 150px;
+            height: auto;
+            margin-bottom: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .hero h1 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--dark-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #d3b269;
+            transform: translateY(-3px);
+        }
+
+        .btn-outline {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(224, 192, 128, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            color: var(--light-color);
+            font-size: 2rem;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-20px) translateX(-50%); }
+            60% { transform: translateY(-10px) translateX(-50%); }
+        }
+
+        /* 功能区块 */
+        section {
+            padding: 6rem 5%;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.8;
+        }
+
+        .features {
+            background-color: rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            transition: 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            font-size: 1rem;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        /* 联系区块 */
+        .contact {
+            background-color: rgba(0, 0, 0, 0.9);
+            text-align: center;
+        }
+
+        .contact-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .contact-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .contact-card {
+            display: block;
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid var(--glass-border);
+            transition: 0.3s ease;
+            text-decoration: none;
+            color: var(--light-color);
+            cursor: pointer;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary-color);
+        }
+
+        .contact-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .contact-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-detail {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+        }
+
+        .contact-desc {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        .contact-note {
+            margin-top: 2rem;
+            padding: 1rem 1.5rem;
+            background-color: rgba(224, 192, 128, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(224, 192, 128, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .contact-note i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        /* 页脚 */
+        footer {
+            background-color: var(--dark-color);
+            border-top: 1px solid var(--glass-border);
+            padding: 2rem 5%;
+            text-align: center;
+        }
+
+        footer p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        footer .icp {
+            margin-top: 0.5rem;
+        }
+
+        footer .icp a {
+            color: var(--light-color);
+            text-decoration: none;
+            transition: 0.3s ease;
+        }
+
+        footer .icp a:hover {
+            color: var(--primary-color);
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+
+            .hero-content {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                height: 100vh;
+                background-color: rgba(0, 0, 0, 0.9);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 3rem;
+                transition: 0.5s ease;
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+                z-index: 1000;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-content {
+                padding: 1.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            section {
+                padding: 4rem 5%;
+            }
+
+            .feature-card {
+                padding: 1.5rem;
+            }
+
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景容器 -->
+    <div class="bg-container">
+        <img src="bg.jpg" alt="背景图片" class="background-img">
+        <canvas class="rain-canvas"></canvas>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav id="navbar">
+        <div class="logo">
+            <img src="mojingbg.png" alt="魔精Bot Logo">
+            <span class="logo-title">魔精 BOT</span>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="#hero">首页</a>
+            <a href="#features">功能</a>
+            <a href="#contact">联系我们</a>
+        </div>
+        <button class="mobile-menu-btn" id="menuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+
+    <!-- 英雄区块 -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <img src="mojingbg.png" alt="魔精Bot" class="hero-img">
+            <h1>魔精 BOT</h1>
+            <p>重返未来1999，可生成box图片，查询材料刷取推荐、角色共鸣与心相，最优关卡刷取等等</p>
+            <div class="btn-group">
+                <a href="#features" class="btn btn-primary">了解功能</a>
+                <a href="#contact" class="btn btn-outline">联系我们</a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- 功能区块 -->
+    <section class="features" id="features">
+        <div class="section-title">
+            <h2>实用功能</h2>
+            <p>魔精BOT拥有多种实用功能，助各位司辰查询攻略，解决游戏问题</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>QQ机器人</h3>
+                <p>QQ官方机器人，可直接搜索拉入自己群中使用</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-images"></i>
+                </div>
+                <h3>BOX生成</h3>
+                <p>生成司辰BOX图，可选择"详细面板"或"box"两种指令生成不同的图</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>信息查询</h3>
+                <p>查询最优刷取建议，版本活动商店性价比，角色共鸣与心相</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-dice"></i>
+                </div>
+                <h3>娱乐功能</h3>
+                <p>今日运势、模拟十连、剧情打分等多种娱乐功能</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <h3>多平台集成</h3>
+                <p>onebot11协议，正在集成微信服务号等其他平台，敬请期待</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h3>合作定制</h3>
+                <p>定制专属功能，欢迎各攻略组合作，产出更多实用功能</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系区块 -->
+    <section class="contact" id="contact">
+        <div class="section-title">
+            <h2>联系我们</h2>
+            <p>有任何问题或建议？欢迎加入交流群一起讨论</p>
+        </div>
+        <div class="contact-container">
+            <div class="contact-cards">
+                <a href="https://space.bilibili.com/4881568" target="_blank" class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fab fa-bilibili"></i>
+                    </div>
+                    <h3>Bilibili</h3>
+                    <p class="contact-detail">你的群友C</p>
+                    <p class="contact-desc">点个关注喵，谢谢喵~</p>
+                </a>
+                <a href="https://qm.qq.com/q/xCnhtm0x9e" target="_blank" class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fab fa-qq"></i>
+                    </div>
+                    <h3>QQ交流群</h3>
+                    <p class="contact-detail">517308321</p>
+                    <p class="contact-desc">加入群聊，与其他司辰一起交流攻略心得</p>
+                </a>
+            </div>
+            <div class="contact-note">
+                <i class="fas fa-info-circle"></i>
+                <span>如有bug反馈、功能建议或合作需求，欢迎在群内联系群主，或b站私信</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>© 2025 魔精BOT. 保留所有权利。</p>
+        
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 移动菜单切换
+        const menuBtn = document.getElementById('menuBtn');
+        const navLinks = document.getElementById('navLinks');
+        
+        menuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            menuBtn.innerHTML = navLinks.classList.contains('active') 
+                ? '<i class="fas fa-times"></i>' 
+                : '<i class="fas fa-bars"></i>';
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                navLinks.classList.remove('active');
+                menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 雨滴效果
+        const canvas = document.querySelector('.rain-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let rain = [];
+        const numRaindrops = 100; // 雨滴数量
+        const maxSpeed = 5; // 最大上升速度
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            rain = []; // 调整大小时重置雨滴
+            for (let i = 0; i < numRaindrops; i++) {
+                rain.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    speed: Math.random() * maxSpeed + 1,
+                    length: Math.random() * 20 + 10 // 雨滴长度
+                });
+            }
+        }
+
+        function drawRain() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(200, 220, 255, 0.6)'; // 雨滴颜色
+            ctx.lineWidth = 1;
+            ctx.lineCap = 'round';
+
+            for (let i = 0; i < rain.length; i++) {
+                const drop = rain[i];
+
+                // 绘制雨滴
+                ctx.beginPath();
+                ctx.moveTo(drop.x, drop.y);
+                ctx.lineTo(drop.x, drop.y - drop.length);
+                ctx.stroke();
+
+                // 更新位置（向上移动）
+                drop.y -= drop.speed;
+
+                // 如果雨滴超出屏幕（顶部），重置到底部
+                if (drop.y < 0) {
+                    drop.y = canvas.height + drop.length;
+                    drop.x = Math.random() * canvas.width;
+                    drop.speed = Math.random() * maxSpeed + 1;
+                    drop.length = Math.random() * 20 + 10;
+                }
+            }
+        }
+
+        function animate() {
+            drawRain();
+            requestAnimationFrame(animate);
+        }
+
+        // 初始设置和事件监听
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>
